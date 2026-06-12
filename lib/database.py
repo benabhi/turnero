@@ -5,13 +5,13 @@ from contextlib import closing
 
 from lib.config import DATABASE_PATH
 
-def obtener_conexion():
+def obtener_conexion() -> sqlite3.Connection:
     """Abre una conexión a la base con filas accesibles por nombre de columna (`sqlite3.Row`)."""
     conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
-def inicializar_bd():
+def inicializar_bd() -> None:
     """Crea la tabla `turnos` si no existe (incluye el `UNIQUE` de fecha+hora)."""
     with closing(obtener_conexion()) as conn:
         conn.execute('''
@@ -30,10 +30,11 @@ def inicializar_bd():
         ''')
         conn.commit()
 
-def obtener_horas_reservadas(fecha_str):
+def obtener_horas_reservadas(fecha_str: str) -> set[str]:
     """
-    Retorna un `set` (evita duplicidad) de horas reservadas para una fecha dada.
-    Ejemplo de retorno: `{'08:30', '11:00'}`
+    Horas ya ocupadas en una fecha, para descartar esos bloques al armar la grilla.
+
+    Ejemplo: `{'08:30', '11:00'}`. El `set` evita duplicados y agiliza la búsqueda.
     """
     with closing(obtener_conexion()) as conn:
         cursor = conn.execute("SELECT hora FROM turnos WHERE fecha = ?", (fecha_str,))
@@ -41,8 +42,11 @@ def obtener_horas_reservadas(fecha_str):
         # Comprensión de conjunto: arma un set recorriendo cada fila y tomando su columna 'hora'.
         return {row['hora'] for row in cursor.fetchall()}
 
-def guardar_turno(fecha, hora, nombre, apellido, dni, telefono, email):
-    """Inserta de forma segura un nuevo turno confirmado en la base de datos."""
+def guardar_turno(
+    fecha: str, hora: str, nombre: str, apellido: str,
+    dni: str, telefono: str, email: str,
+) -> bool:
+    """Inserta un turno confirmado. Devuelve `False` si esa fecha+hora ya estaba ocupada."""
     with closing(obtener_conexion()) as conn:
         try:
             conn.execute('''
@@ -54,7 +58,7 @@ def guardar_turno(fecha, hora, nombre, apellido, dni, telefono, email):
         except sqlite3.IntegrityError:
             return False
 
-def obtener_turnos(desde=None):
+def obtener_turnos(desde: str | None = None) -> list[sqlite3.Row]:
     """
     Lista los turnos ordenados por fecha y hora.
     Si se pasa `desde` (`YYYY-MM-DD`), filtra solo los turnos vigentes (`fecha >= desde`).
@@ -68,7 +72,7 @@ def obtener_turnos(desde=None):
             cursor = conn.execute("SELECT * FROM turnos ORDER BY fecha, hora")
         return cursor.fetchall()
 
-def borrar_turno(turno_id):
+def borrar_turno(turno_id: int) -> None:
     """Elimina un turno por su id."""
     with closing(obtener_conexion()) as conn:
         conn.execute("DELETE FROM turnos WHERE id = ?", (turno_id,))

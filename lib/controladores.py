@@ -8,24 +8,31 @@ y los del panel de administración (login, listado, borrado, logout).
 import re
 
 from flask import request, jsonify, render_template, session, redirect
+from flask.typing import ResponseReturnValue
 
 from lib.database import obtener_horas_reservadas, guardar_turno, obtener_turnos, borrar_turno
-from lib.fechas import obtener_limites_calendario, verificar_fin_de_semana, generar_grilla_base
+from lib.fechas import (
+    Horario, obtener_limites_calendario, verificar_fin_de_semana, generar_grilla_base,
+)
 from lib.config import BLOQUES_HORARIOS, ADMIN_USUARIO, ADMIN_CLAVE
 
 # Campos que viajan en el formulario, en orden.
-CAMPOS = ("fecha", "hora", "nombre", "apellido", "dni", "telefono", "email")
+CAMPOS: tuple[str, ...] = ("fecha", "hora", "nombre", "apellido", "dni", "telefono", "email")
 
 
-def _construir_horarios(fecha):
-    """Devuelve `(es_fin_de_semana, grilla_de_horarios)` para una fecha dada."""
+def _construir_horarios(fecha: str) -> tuple[bool, list[Horario]]:
+    """Resuelve si la fecha es fin de semana y, si no lo es, arma su grilla de horarios."""
     if verificar_fin_de_semana(fecha):
         return True, []
     horas_ocupadas = obtener_horas_reservadas(fecha)
     return False, generar_grilla_base(fecha, horas_ocupadas)
 
 
-def _construir_contexto(fecha, errores=None, datos=None):
+def _construir_contexto(
+    fecha: str,
+    errores: dict[str, str] | None = None,
+    datos: dict[str, str] | None = None,
+) -> dict[str, object]:
     """Arma el contexto que consume `formulario.html` (carga inicial o re-render con errores)."""
     datos = datos or {}
     min_fecha, max_fecha = obtener_limites_calendario()
@@ -47,14 +54,14 @@ def _construir_contexto(fecha, errores=None, datos=None):
     }
 
 
-def procesar_inicio_formulario():
+def procesar_inicio_formulario() -> dict[str, object]:
     """Carga inicial de la vista pública (`GET /`)."""
     min_fecha, _ = obtener_limites_calendario()
     fecha = request.args.get("fecha", min_fecha)
     return _construir_contexto(fecha)
 
 
-def obtener_horarios_json():
+def obtener_horarios_json() -> ResponseReturnValue:
     """API de horarios (`GET /api/horarios-disponibles`) que consume Alpine.js."""
     fecha = request.args.get("fecha")
     if not fecha:
@@ -64,8 +71,8 @@ def obtener_horarios_json():
     return jsonify({"es_fin_de_semana": es_fin_de_semana, "horarios": horarios})
 
 
-def _validar(datos):
-    """Valida los datos del turno y devuelve un diccionario `{campo: mensaje}`. Vacío = todo OK."""
+def _validar(datos: dict[str, str]) -> dict[str, str]:
+    """Valida los datos del turno y devuelve `{campo: mensaje}` por cada error. Vacío = todo OK."""
     errores = {}
     min_fecha, max_fecha = obtener_limites_calendario()
     fecha = datos["fecha"]
@@ -106,7 +113,7 @@ def _validar(datos):
     return errores
 
 
-def procesar_envio_turno():
+def procesar_envio_turno() -> ResponseReturnValue:
     """Procesa el alta de un turno (`POST /sacar-turno`)."""
     # Comprensión de diccionario: arma un dict con cada campo y su valor del formulario (sin espacios).
     datos = {campo: request.form.get(campo, "").strip() for campo in CAMPOS}
@@ -129,21 +136,21 @@ def procesar_envio_turno():
 
 # --- Panel de administración ---
 
-def redirigir_admin():
+def redirigir_admin() -> ResponseReturnValue:
     """`GET /admin`: lleva al panel si hay sesión, o al login si no."""
     if session.get("admin"):
         return redirect("/admin/turnos")
     return redirect("/admin/login")
 
 
-def mostrar_login_admin():
+def mostrar_login_admin() -> ResponseReturnValue:
     """`GET /admin/login`: muestra el formulario (o salta al panel si ya hay sesión)."""
     if session.get("admin"):
         return redirect("/admin/turnos")
     return render_template("admin_login.html")
 
 
-def procesar_login_admin():
+def procesar_login_admin() -> ResponseReturnValue:
     """`POST /admin/login`: valida credenciales. Responde al fetch del cliente."""
     usuario = request.form.get("usuario", "").strip()
     clave = request.form.get("clave", "")
@@ -155,7 +162,7 @@ def procesar_login_admin():
     return jsonify({"clave": "Usuario o contraseña incorrectos."}), 401
 
 
-def mostrar_turnos_admin():
+def mostrar_turnos_admin() -> ResponseReturnValue:
     """`GET /admin/turnos`: lista los turnos (vigentes por defecto, o todos con `?historial=true`)."""
     if not session.get("admin"):
         return redirect("/admin/login")
@@ -170,7 +177,7 @@ def mostrar_turnos_admin():
     return render_template("admin_turnos.html", turnos=turnos, historial=historial)
 
 
-def procesar_borrado_turno(turno_id):
+def procesar_borrado_turno(turno_id: int) -> ResponseReturnValue:
     """`POST /admin/borrar/<id>`: elimina un turno. Responde al fetch del cliente."""
     if not session.get("admin"):
         return ("", 401)
@@ -179,7 +186,7 @@ def procesar_borrado_turno(turno_id):
     return ("", 204)
 
 
-def cerrar_sesion_admin():
+def cerrar_sesion_admin() -> ResponseReturnValue:
     """`GET /admin/logout`: cierra la sesión y vuelve al login."""
     session.pop("admin", None)
     return redirect("/admin/login")
