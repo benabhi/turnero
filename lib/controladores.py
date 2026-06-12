@@ -5,6 +5,10 @@ Agrupa los controladores de la vista pública (formulario, API de horarios, alta
 y los del panel de administración (login, listado, borrado, logout).
 """
 
+# Mantiene las anotaciones como texto, así pdoc muestra los alias de tipo tal
+# cual se escriben (p. ej. `ResponseReturnValue`) en vez de expandir su definición.
+from __future__ import annotations
+
 import re
 
 from flask import request, jsonify, render_template, session, redirect
