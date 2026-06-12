@@ -74,7 +74,13 @@ solo para documentar (la app no la necesita para funcionar):
 
 ```bash
 pip install pdoc
-pdoc app lib.config lib.fechas lib.database lib.controladores -o docs
+python -m pdoc app lib.config lib.fechas lib.database lib.controladores -o docs
 ```
 
 Genera un sitio HTML en `docs/` (ignorada por git); abrí `docs/index.html` en el navegador.
+
+> Se invoca como `python -m pdoc` (y no `pdoc` a secas) para que el directorio
+> actual quede en `sys.path` y se puedan importar `app` y `lib`. Es normal ver
+> algunas advertencias `Warn: Error parsing type annotation ... Response` al
+> documentar `lib.controladores`: provienen del tipo `ResponseReturnValue` de
+> Flask y no impiden generar la documentación.

@@ -8,5 +8,8 @@ database.db
 __pycache__/
 *.pyc
 
-# Documentación generada con pydoc
+# Cache de mypy (chequeo de tipos)
+.mypy_cache/
+
+# Documentación generada con pdoc
 docs/
