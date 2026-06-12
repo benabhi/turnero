@@ -32,7 +32,7 @@ def inicializar_bd():
 
 def obtener_horas_reservadas(fecha_str):
     """
-    Retorna un `set` de horas reservadas para una fecha dada.
+    Retorna un `set` (evita duplicidad) de horas reservadas para una fecha dada.
     Ejemplo de retorno: `{'08:30', '11:00'}`
     """
     with closing(obtener_conexion()) as conn:
