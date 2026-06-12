@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {# Token CSRF accesible para el JavaScript que envía formularios por fetch (login y borrado). #}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{% block title %}Policía de Río Negro - Sistema de Turnos{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/estilos.css">
+
+    {# Bloque para JS que debe ejecutarse ANTES de que arranque Alpine,
+       como registrar componentes con Alpine.data() en el evento alpine:init.
+       Va antes del script de Alpine para garantizar ese orden de carga. #}
+    {% block head_scripts %}{% endblock %}
+
+    {# Alpine.js global: disponible para todas las vistas. defer evita bloquear el render. #}
+    <script src="/static/js/vendor/alpine.min.js" defer></script>
+</head>
+<body>
+
+    <nav class="navbar-institucional">
+        <div class="navbar-brand">Policía de Río Negro</div>
+        <div class="navbar-sub">Turnos - Certificados de Antecedentes</div>
+    </nav>
+
+    {% block content %}{% endblock %}
+
+    {# Cada vista carga aquí su JavaScript específico (ej. login, panel de turnos). #}
+    {% block scripts %}{% endblock %}
+
+</body>
+</html>

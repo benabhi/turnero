@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block title %}Control Interno - Autenticación{% endblock %}
+
+{% block content %}
+<div class="wrapper-pantalla-central">
+    <div class="bloque-tramite-limpio bloque-login">
+
+        <header class="encabezado-formulario-unico">
+            <h2>Acceso Restringido</h2>
+            <p>Panel de Control y Monitoreo de Solicitudes de Antecedentes.</p>
+        </header>
+
+        <div class="card-formulario-central">
+            <form action="/admin/login" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="grid-inputs grid-una-columna">
+
+                    <div class="form-group-modern">
+                        <label>Usuario Oficial</label>
+                        <input type="text" name="usuario" required placeholder="Ej. administrador" autocomplete="username">
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Contraseña de Seguridad</label>
+                        <input type="password" name="clave" required placeholder="••••••••" autocomplete="current-password">
+                    </div>
+
+                </div>
+
+                <div class="contenedor-boton-envio con-margen-superior">
+                    <button type="button" id="btn-login" class="btn-modern-submit">Ingresar al Sistema</button>
+                </div>
+            </form>
+
+            {# Enlace discreto para regresar al formulario público de turnos #}
+            <div class="separador-volver">
+                <a href="/" class="link-volver">
+                    ← Volver al Turnero Público
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/admin_login.js" defer></script>
+{% endblock %}

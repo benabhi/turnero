@@ -1,0 +1,185 @@
+{% extends "layout.html" %}
+
+{% block title %}Policía de Río Negro - Dirección Judicial{% endblock %}
+
+{% block content %}
+
+<div class="wrapper-pantalla-central">
+    <div class="bloque-tramite-limpio">
+
+        <header class="encabezado-formulario-unico">
+            <h2>Certificado de Antecedentes</h2>
+            <p>Plataforma oficial de reserva de turnos para atención presencial en la Dirección Judicial de la Policía
+                de Río Negro.</p>
+
+            <div class="barra-datos-tramite">
+                <div class="dato-item-linea">
+                    {# Icono generado con SVG #}
+                    <svg class="icono-svg-dato-reloj" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <div class="dato-texto-bloque">
+                        <span class="titulo-dato">Atención:</span>
+                        <span class="valor-dato">08:00 a 14:00 hs (días hábiles)</span>
+                    </div>
+                </div>
+
+                <div class="linea-divisoria-dato ocu-movil"></div>
+
+                <div class="dato-item-linea">
+                    {# Icono generado con SVG #}
+                    <svg class="icono-svg-dato-dni" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                        <circle cx="9" cy="12" r="2"></circle>
+                        <line x1="15" y1="10" x2="19" y2="10"></line>
+                        <line x1="15" y1="14" x2="19" y2="14"></line>
+                    </svg>
+                    <div class="dato-texto-bloque">
+                        <span class="titulo-dato">Requisito:</span>
+                        <span class="valor-dato">DNI físico obligatorio</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        {# x-data inicia el componente Alpine.js, pasándole la fecha actual y si es fin de semana. #}
+        <div class="card-formulario-central"
+            x-data="formTurno('{{ contexto.previo_fecha }}', {{ 'true' if contexto.es_fin_de_semana else 'false' }})">
+
+            <form action="/sacar-turno" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="grid-inputs">
+
+                    <div class="form-group-modern">
+                        <label>Fecha de Asistencia</label>
+                        <input type="date" id="input-fecha-tramite" name="fecha"
+                            min="{{ contexto.min_fecha }}"
+                            max="{{ contexto.max_fecha }}"
+                            required
+                            x-model="fecha"
+                            @change="actualizarHorarios()"
+                            class="{% if contexto.errores.fecha %}input-error{% endif %}">
+
+                        {% if contexto.errores.fecha %}
+                        <span class="error-mensaje-input">{{ contexto.errores.fecha }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Horario Disponible</label>
+
+                        {# Alpine.js maneja este bloque: si la fecha es fin de semana muestra el aviso,
+                        y si no, llena el desplegable con los horarios que trae de la API.
+                        x-cloak evita que se vea el contenido un instante antes de cargar Alpine. #}
+                        <div x-show="esFinDeSemana" x-cloak
+                            class="alerta-fin-semana">
+                            Advertencia: No hay atención sábados ni domingos.
+                        </div>
+
+                        <select name="hora" required
+                            x-show="!esFinDeSemana" x-cloak
+                            :disabled="esFinDeSemana"
+                            class="{% if contexto.errores.hora %}input-error{% endif %}">
+                            <option value="">Seleccione...</option>
+                            <template x-for="h in horarios" :key="h.hora">
+                                <option :value="h.hora"
+                                    :disabled="!h.disponible"
+                                    :class="!h.disponible ? 'option-disabled' : ''"
+                                    x-text="h.hora + ' ' + h.mensaje">
+                                </option>
+                            </template>
+                        </select>
+
+                        {% if contexto.errores.hora %}
+                        <span class="error-mensaje-input">{{ contexto.errores.hora }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Nombre / s</label>
+                        <input type="text" name="nombre" value="{{ contexto.previo_nombre }}" required
+                            placeholder="Ej. Juan Carlos"
+                            pattern="[A-Za-zÀ-ÿ' \-]+"
+                            title="Solo letras (sin números)"
+                            class="{% if contexto.errores.nombre %}input-error{% endif %}">
+                        {% if contexto.errores.nombre %}
+                        <span class="error-mensaje-input">{{ contexto.errores.nombre }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Apellido / s</label>
+                        <input type="text" name="apellido" value="{{ contexto.previo_apellido }}" required
+                            placeholder="Ej. Pérez"
+                            pattern="[A-Za-zÀ-ÿ' \-]+"
+                            title="Solo letras (sin números)"
+                            class="{% if contexto.errores.apellido %}input-error{% endif %}">
+                        {% if contexto.errores.apellido %}
+                        <span class="error-mensaje-input">{{ contexto.errores.apellido }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Documento (DNI)</label>
+                        <input type="text" name="dni" value="{{ contexto.previo_dni }}" required
+                            placeholder="Sin puntos ni espacios"
+                            pattern="[0-9]{7,9}" inputmode="numeric"
+                            title="Solo números, entre 7 y 9 dígitos"
+                            class="{% if contexto.errores.dni %}input-error{% endif %}">
+                        {% if contexto.errores.dni %}
+                        <span class="error-mensaje-input">{{ contexto.errores.dni }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group-modern">
+                        <label>Teléfono Celular</label>
+                        <input type="tel" name="telefono" value="{{ contexto.previo_telefono }}" required
+                            placeholder="Ej. 2920123456"
+                            pattern="[0-9]{6,15}" inputmode="numeric"
+                            title="Solo números, entre 6 y 15 dígitos"
+                            class="{% if contexto.errores.telefono %}input-error{% endif %}">
+                        {% if contexto.errores.telefono %}
+                        <span class="error-mensaje-input">{{ contexto.errores.telefono }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group-modern full-width">
+                        <label>Correo Electrónico</label>
+                        <input type="email" name="email" value="{{ contexto.previo_email }}" required
+                            placeholder="Ej. juan@gmail.com"
+                            pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
+                            title="Ingrese un correo válido (ej. juan@gmail.com)"
+                            class="{% if contexto.errores.email %}input-error{% endif %}">
+                        {% if contexto.errores.email %}
+                        <span class="error-mensaje-input">{{ contexto.errores.email }}</span>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+                <p class="nota-legal-dni">
+                    Al confirmar el turno, usted declara conocer que es requisito excluyente presentarse únicamente en
+                    <b>días hábiles</b> con el <b>DNI físico en mano</b> en la Dirección Judicial de la Policía de Río
+                    Negro para la validación de identidad. No se admitirán copias ni formatos digitales.
+                </p>
+
+                <div class="contenedor-boton-envio">
+                    <button type="submit" class="btn-modern-submit">Confirmar Reserva de Turno</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{# Se carga en el head (antes que Alpine) porque registra el componente formTurno en alpine:init. #}
+{% block head_scripts %}
+<script src="/static/js/formulario.js" defer></script>
+{% endblock %}

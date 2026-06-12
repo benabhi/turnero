@@ -1,0 +1,12 @@
+# Entorno virtual
+venv/
+
+# Base de datos local
+database.db
+
+# Cache de Python
+__pycache__/
+*.pyc
+
+# Documentación generada con pydoc
+docs/

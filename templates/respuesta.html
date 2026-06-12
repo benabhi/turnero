@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+
+{% block title %}Policía de Río Negro - Turno Confirmado{% endblock %}
+
+{% block content %}
+
+<div class="wrapper-pantalla-central">
+    <div class="bloque-tramite-limpio bloque-respuesta-centrado">
+
+        <div class="card-formulario-central">
+
+            <div class="contenedor-icono-exito">
+                <svg class="icono-svg-confirmado" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+            </div>
+
+            <header class="encabezado-formulario-unico">
+                <h2 class="titulo-exito">Turno Confirmado</h2>
+                <p class="parrafo-exito">
+                    Su reserva ha sido registrada con éxito en el sistema de la Dirección Judicial de la Policía de Río
+                    Negro.
+                </p>
+            </header>
+
+            <div class="ticket-confirmacion">
+
+                <div class="ticket-linea">
+                    <span class="ticket-label">Ciudadano:</span>
+                    <span class="ticket-valor">{{ turno.apellido }}, {{ turno.nombre }}</span>
+                </div>
+
+                <div class="ticket-linea">
+                    <span class="ticket-label">Documento:</span>
+                    <span class="ticket-valor">{{ turno.dni }}</span>
+                </div>
+
+                <div class="ticket-linea">
+                    <span class="ticket-label">Fecha Asignada:</span>
+                    <span class="ticket-valor ticket-valor-destacado">{{ turno.fecha }}</span>
+                </div>
+
+                <div class="ticket-linea">
+                    <span class="ticket-label">Horario de Atención:</span>
+                    <span class="ticket-valor ticket-valor-destacado">{{ turno.hora }} hs</span>
+                </div>
+
+            </div>
+
+            <div class="alerta-recordatorio-ticket">
+                <p>
+                    <b>Información Importante:</b> Deberá presentarse 5 minutos antes del horario fijado en la sede
+                    judicial correspondiente portando obligatoriamente su DNI físico original en vigencia. No se
+                    aceptarán acreditaciones digitales ni fotocopias.
+                </p>
+            </div>
+
+            <div class="contenedor-boton-envio">
+                <a href="/" class="btn-modern-submit">
+                    Volver al Inicio
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
