@@ -20,8 +20,9 @@ from lib.fechas import (
 )
 from lib.config import BLOQUES_HORARIOS, ADMIN_USUARIO, ADMIN_CLAVE
 
-# Campos que viajan en el formulario, en orden.
+
 CAMPOS: tuple[str, ...] = ("fecha", "hora", "nombre", "apellido", "dni", "telefono", "email")
+"""Campos que viajan en el formulario del turno, en orden."""
 
 
 def _construir_horarios(fecha: str) -> tuple[bool, list[Horario]]:
