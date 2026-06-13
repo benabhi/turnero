@@ -2,6 +2,11 @@
 
 {% block title %}Policía de Río Negro - Dirección Judicial{% endblock %}
 
+{# Se carga en el head (antes que Alpine) porque registra el componente formTurno en alpine:init. #}
+{% block head_scripts %}
+<script src="/static/js/formulario.js" defer></script>
+{% endblock %}
+
 {% block content %}
 
 <div class="wrapper-pantalla-central">
@@ -177,9 +182,4 @@
     </div>
 </div>
 
-{% endblock %}
-
-{# Se carga en el head (antes que Alpine) porque registra el componente formTurno en alpine:init. #}
-{% block head_scripts %}
-<script src="/static/js/formulario.js" defer></script>
 {% endblock %}
